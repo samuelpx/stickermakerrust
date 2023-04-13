@@ -2,6 +2,7 @@ use image::{imageops, GenericImageView};
 use image::imageops::FilterType;
 use std::fs::{read_dir, create_dir_all};
 use std::path::{Path, PathBuf};
+use rayon::prelude::*;
 
 fn main() {
     let current_dir = std::env::current_dir().unwrap();
@@ -10,10 +11,9 @@ fn main() {
     let converted_folder = format!("{}/converted", input_folder);
     create_dir_all(&converted_folder).unwrap();
 
-    let files = read_dir(input_folder).unwrap();
+    let files: Vec<_> = read_dir(input_folder).unwrap().map(|f| f.unwrap()).collect();
 
-    for file in files {
-        let entry = file.unwrap();
+    files.par_iter().for_each(|entry| {
         let path = entry.path();
         println!("Processing file {:?}", path);
 
@@ -30,9 +30,8 @@ fn main() {
                 let resized_image = imageops::resize(&image_to_convert, new_width, new_height, FilterType::Lanczos3);
 
                 let new_file_name = format!(
-                    "{}+CONVERTED.{}",
+                    "{}+CONVERTED.png",
                     path.file_stem().unwrap().to_str().unwrap(),
-                    extension
                 );
 
                 let new_file_path = PathBuf::from(&converted_folder).join(&new_file_name);
@@ -40,5 +39,6 @@ fn main() {
                 resized_image.save(&new_file_path).unwrap();
             }
         }
-    }
+    });
 }
+
