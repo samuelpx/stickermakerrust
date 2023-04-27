@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 
+png = "0.17.8"
 image = "0.23.14"
 imageproc = "0.23.0"
 rayon = "1.5"
